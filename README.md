@@ -1,33 +1,37 @@
 # AQUATWEETS
 
-A project for managing and analyzing aquatic-themed tweets and social media content.
-
-## Description
-
-AQUATWEETS is designed to help track, analyze, and share water-related content on social media platforms.
+This repository contains the code for **Sproto Gremlin Bot**, a Telegram DM bot that rewrites your thoughts in the voice of the Sproto Gremlin. It responds to the `/sproto` command with two tweet-style variants and lets you give feedback via 👍/👎 buttons.
 
 ## Features
 
-- Coming soon...
+- Runs in private Telegram chats
+- Uses a local system prompt stored in `prompt.txt`
+- Generates two variations for each `/sproto` command using a transformers-based LLM
+- Records feedback in `feedback.csv`
+
+## Requirements
+
+- Python 3.8+
+- The packages listed in `requirements.txt`
+- A Telegram bot token set in the `TELEGRAM_TOKEN` environment variable
+
+Optional: set `MODEL_NAME` to choose a HuggingFace model and `PROMPT_PATH` to use a custom prompt file.
 
 ## Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/AQUATWEETS.git
-cd AQUATWEETS
-
-# Install dependencies (to be added)
+pip install -r requirements.txt
 ```
 
 ## Usage
 
-Details coming soon...
+1. Set `TELEGRAM_TOKEN` in your environment.
+2. Run the bot:
 
-## Contributing
+```bash
+python bot.py
+```
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Send `/sproto your text` to the bot in a DM and it will reply with two gremlin-style tweets. Click 👍 or 👎 under each message to record feedback.
 
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details. 
+Feedback is appended to `feedback.csv` for later analysis.
