@@ -6,7 +6,7 @@ This repository contains the code for **Sproto Gremlin Bot**, a Telegram DM bot 
 
 - Runs in private Telegram chats
 - Uses a local system prompt stored in `prompt.txt`
-- Generates two variations for each `/sproto` command using a transformers-based LLM
+- Generates two variations for each `/sproto` command using OpenAI GPT-4
 - Records feedback in `feedback.csv`
 
 ## Requirements
@@ -15,7 +15,7 @@ This repository contains the code for **Sproto Gremlin Bot**, a Telegram DM bot 
 - The packages listed in `requirements.txt`
 - A Telegram bot token set in the `TELEGRAM_TOKEN` environment variable
 
-Optional: set `MODEL_NAME` to choose a HuggingFace model and `PROMPT_PATH` to use a custom prompt file.
+Set `OPENAI_API_KEY` and `PROMPT_PATH` as needed to use a custom prompt file.
 
 ## Installation
 
