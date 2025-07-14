@@ -7,12 +7,12 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
 from telegram.ext import MessageHandler, filters
 
-from transformers import pipeline
+import openai
 
 # Load environment variables
 TOKEN = os.getenv("TELEGRAM_TOKEN")
-MODEL_NAME = os.getenv("MODEL_NAME", "gpt2")
 PROMPT_PATH = os.getenv("PROMPT_PATH", "prompt.txt")
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 if TOKEN is None:
     raise RuntimeError("TELEGRAM_TOKEN environment variable not set")
@@ -21,8 +21,6 @@ if TOKEN is None:
 with open(PROMPT_PATH, "r", encoding="utf-8") as f:
     SYSTEM_PROMPT = f.read().strip()
 
-# Load text generation pipeline
-text_generator = pipeline("text-generation", model=MODEL_NAME)
 
 def generate_variants(user_text: str, n: int = 2) -> List[str]:
     variants = []
@@ -36,42 +34,26 @@ def generate_variants(user_text: str, n: int = 2) -> List[str]:
         f"Sproto vibes: {user_text} but with extra GREMLIN ENERGY! ⚡🐸💚"
     ]
     
-    # Try GPT-2 generation first
+    # Generate gremlin-style text using GPT-4
     try:
-        prompt = f"Rewrite this in a playful crypto gremlin style: {user_text}\n\nGremlin version:"
-        outputs = text_generator(
-            prompt, 
-            max_new_tokens=30,
-            num_return_sequences=n, 
-            do_sample=True, 
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_text}
+            ],
             temperature=0.9,
-            pad_token_id=text_generator.tokenizer.eos_token_id,
-            repetition_penalty=1.2
+            n=n
         )
-        
-        for out in outputs:
-            full_text = out["generated_text"]
-            if "Gremlin version:" in full_text:
-                generated = full_text.split("Gremlin version:")[-1].strip()
-            else:
-                generated = full_text[len(prompt):].strip()
-            
-            # Clean up and validate
-            generated = generated.split('\n')[0].strip()  # Take first line only
-            
-            # Remove problematic patterns
-            if (generated and 
-                len(generated) > 5 and 
-                len(generated) < 200 and
-                not generated.startswith('http') and
-                not generated.startswith('[') and
-                not generated.startswith('@') and
-                'github.com' not in generated.lower() and
-                'bit.ly' not in generated.lower() and
-                't.co' not in generated.lower()):
-                variants.append(generated)
+        for choice in response.choices:
+            variant = choice.message.content.strip().split('\n')[0].strip()
+            if (variant and len(variant) > 5 and len(variant) < 280 and
+                    not variant.startswith('http') and
+                    not variant.startswith('[') and
+                    not variant.startswith('@')):
+                variants.append(variant)
     except Exception as e:
-        print(f"GPT-2 generation failed: {e}")
+        print(f"OpenAI API call failed: {e}")
     
     # Fill remaining slots with template responses
     import random
