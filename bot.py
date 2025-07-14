@@ -35,44 +35,61 @@ with open(PROMPT_PATH, "r", encoding="utf-8") as f:
 def generate_variants(user_text: str, n: int = 2) -> List[str]:
     variants = []
     
-    # Simple templates for Sproto Gremlin style responses
-    templates = [
-        f"Gremlin sees '{user_text}' and goes BRRRR! 🐸💚 Much chaos, very mischief!",
-        f"Sproto Gremlin says: {user_text} but make it GREMLINY! 🦈✨ To the moon!",
-        f"*gremlin noises* {user_text}? More like {user_text.upper()}!!! 🚀🐸",
-        f"Gremlin wisdom: {user_text} + chaos = PROFIT! 💎🙌 hodl hodl hodl",
-        f"Sproto vibes: {user_text} but with extra GREMLIN ENERGY! ⚡🐸💚"
-    ]
+    # Generate gremlin-style text using GPT-4 with retry logic
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": user_text}
+                ],
+                temperature=0.9,
+                n=n
+            )
+            for choice in response.choices:
+                variant = choice.message.content.strip().split('\n')[0].strip()
+                if (variant and len(variant) > 5 and len(variant) < 280 and
+                        not variant.startswith('http') and
+                        not variant.startswith('[') and
+                        not variant.startswith('@')):
+                    variants.append(variant)
+            
+            # If we got enough variants, break out of retry loop
+            if len(variants) >= n:
+                break
+                
+        except Exception as e:
+            print(f"OpenAI API call failed (attempt {attempt + 1}/{max_retries}): {e}")
+            if attempt == max_retries - 1:
+                # On final failure, return a simple error message
+                return [f"*gremlin temporarily unavailable* 🐸💔 Try again in a moment!"]
     
-    # Generate gremlin-style text using GPT-4
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4",
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_text}
-            ],
-            temperature=0.9,
-            n=n
-        )
-        for choice in response.choices:
-            variant = choice.message.content.strip().split('\n')[0].strip()
+    # If we didn't get enough variants, make additional API calls
+    while len(variants) < n:
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": user_text}
+                ],
+                temperature=0.9,
+                n=1
+            )
+            variant = response.choices[0].message.content.strip().split('\n')[0].strip()
             if (variant and len(variant) > 5 and len(variant) < 280 and
                     not variant.startswith('http') and
                     not variant.startswith('[') and
-                    not variant.startswith('@')):
+                    not variant.startswith('@') and
+                    variant not in variants):
                 variants.append(variant)
-    except Exception as e:
-        print(f"OpenAI API call failed: {e}")
+        except Exception as e:
+            print(f"Additional OpenAI API call failed: {e}")
+            break
     
-    # Fill remaining slots with template responses
-    import random
-    while len(variants) < n:
-        template = random.choice(templates)
-        if template not in variants:
-            variants.append(template)
-    
-    return variants[:n]
+    return variants[:n] if variants else [f"*gremlin temporarily unavailable* 🐸💔 Try again in a moment!"]
 
 async def sproto_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_input = update.message.text
