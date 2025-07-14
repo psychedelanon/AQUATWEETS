@@ -11,7 +11,7 @@ except ImportError as e:
         "python-telegram-bot is required. Install dependencies with 'pip install -r requirements.txt'"
     ) from e
 
-import openai
+from openai import OpenAI
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -20,7 +20,9 @@ load_dotenv()
 # Load environment variables
 TOKEN = os.getenv("TELEGRAM_TOKEN")
 PROMPT_PATH = os.getenv("PROMPT_PATH", "prompt.txt")
-openai.api_key = os.getenv("OPENAI_API_KEY")
+
+# Initialize OpenAI client
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 if TOKEN is None:
     raise RuntimeError("TELEGRAM_TOKEN environment variable not set")
@@ -44,7 +46,7 @@ def generate_variants(user_text: str, n: int = 2) -> List[str]:
     
     # Generate gremlin-style text using GPT-4
     try:
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
