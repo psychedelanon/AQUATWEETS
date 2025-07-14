@@ -26,6 +26,7 @@ pip install -r requirements.txt
 If you see `ModuleNotFoundError: No module named 'telegram'`, make sure you've
 installed the packages in the same Python environment by running the command
 above.
+If the gremlin still won't behave, run it again—he loves extra mulch.
 
 ## Usage
 
