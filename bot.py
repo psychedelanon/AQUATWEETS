@@ -49,11 +49,13 @@ def generate_variants(user_text: str, n: int = 2) -> List[str]:
                 n=n
             )
             for choice in response.choices:
-                variant = choice.message.content.strip().split('\n')[0].strip()
-                if (variant and len(variant) > 5 and len(variant) < 280 and
-                        not variant.startswith('http') and
-                        not variant.startswith('[') and
-                        not variant.startswith('@')):
+                variant = choice.message.content.strip()
+                if (
+                    variant
+                    and len(variant) < 500
+                    and not variant.startswith('http')
+                    and not variant.startswith('[')
+                ):
                     variants.append(variant)
             
             # If we got enough variants, break out of retry loop
@@ -78,12 +80,14 @@ def generate_variants(user_text: str, n: int = 2) -> List[str]:
                 temperature=0.9,
                 n=1
             )
-            variant = response.choices[0].message.content.strip().split('\n')[0].strip()
-            if (variant and len(variant) > 5 and len(variant) < 280 and
-                    not variant.startswith('http') and
-                    not variant.startswith('[') and
-                    not variant.startswith('@') and
-                    variant not in variants):
+            variant = response.choices[0].message.content.strip()
+            if (
+                variant
+                and len(variant) < 500
+                and not variant.startswith('http')
+                and not variant.startswith('[')
+                and variant not in variants
+            ):
                 variants.append(variant)
         except Exception as e:
             print(f"Additional OpenAI API call failed: {e}")
