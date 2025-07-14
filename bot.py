@@ -3,9 +3,13 @@ import csv
 from datetime import datetime
 from typing import List
 
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
-from telegram.ext import MessageHandler, filters
+try:
+    from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+    from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
+except ImportError as e:
+    raise ImportError(
+        "python-telegram-bot is required. Install dependencies with 'pip install -r requirements.txt'"
+    ) from e
 
 import openai
 from dotenv import load_dotenv
