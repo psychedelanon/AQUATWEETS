@@ -8,6 +8,10 @@ from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandle
 from telegram.ext import MessageHandler, filters
 
 import openai
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Load environment variables
 TOKEN = os.getenv("TELEGRAM_TOKEN")
